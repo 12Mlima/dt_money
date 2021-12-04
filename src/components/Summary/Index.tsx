@@ -2,11 +2,25 @@ import { Container } from './styles'
 import incomeImg from '../../assets/income.svg'
 import totalImg from '../../assets/total.svg'
 import outcomeImg from '../../assets/outcome.svg'
-import { useContext } from 'react'
-import { TransactionsContext } from '../../TransactionsContext'
+import { useTransactions } from '../../hooks/useTransactions'
 
 export function Summary() {
-  const { transactions } = useContext(TransactionsContext)
+  const { transactions } = useTransactions()
+
+  const summary = transactions.reduce(
+    (acumulator, transaction) => {
+      if (transaction.type === 'deposit') {
+        acumulator.deposits += transaction.amount
+        acumulator.total += transaction.amount
+      } else {
+        acumulator.withdraw += transaction.amount
+        acumulator.total -= transaction.amount
+      }
+
+      return acumulator
+    },
+    { deposits: 0, withdraw: 0, total: 0 },
+  )
 
   return (
     <Container>
@@ -15,21 +29,37 @@ export function Summary() {
           <p>Entradas</p>
           <img src={incomeImg} alt="Entradas" />
         </header>
-        <strong>R$ 1000,00</strong>
+        <strong>
+          {new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+          }).format(summary.total)}
+        </strong>
       </div>
       <div>
         <header>
           <p>Saídas</p>
           <img src={outcomeImg} alt="Saídas" />
         </header>
-        <strong>- R$ 500,00</strong>
+        <strong>
+          -
+          {new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+          }).format(summary.withdraw)}
+        </strong>
       </div>
-      <div>
+      <div style={{ background: '#33cc95', color: '#ffffff' }}>
         <header>
           <p>Total</p>
           <img src={totalImg} alt="Total" />
         </header>
-        <strong>R$ 500,00</strong>
+        <strong>
+          {new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+          }).format(summary.deposits)}
+        </strong>
       </div>
     </Container>
   )
